@@ -13,12 +13,12 @@ import 'package:network_info_plus/network_info_plus.dart';
 /// [NetworkAnalyzer] class returns instances of [NetworkAddress].
 ///
 /// Found ip addresses will have [exists] == true field.
-class NetworkAddress {
-  final String ip;
-  final int port;
-  final bool exists;
-  NetworkAddress(this.ip, this.port, this.exists);
-}
+// class NetworkAddress {
+//   final String ip;
+//   final int port;
+//   final bool exists;
+//   NetworkAddress(this.ip, this.port, this.exists);
+// }
 
 /// Pings a given subnet (xxx.xxx.xxx) on a given port using [discover] method.
 class NetworkAnalyzer {
@@ -41,7 +41,7 @@ class NetworkAnalyzer {
   /// Pings a given [subnet] (xxx.xxx.xxx) on a given [port].
   ///
   /// Pings IP:PORT one by one
-  static Stream<NetworkAddress> discover(
+  static Stream<String> discover(
     String subnet,
     int port, {
     Duration timeout = const Duration(milliseconds: 400),
@@ -56,19 +56,19 @@ class NetworkAnalyzer {
       try {
         final Socket s = await Socket.connect(host, port, timeout: timeout);
         s.destroy();
-        yield NetworkAddress(host, port, true);
+        yield host;
       } catch (e) {
         if (e is! SocketException) {
           rethrow;
         }
 
         // Check if connection timed out or we got one of predefined errors
-        if (e.osError == null || _errorCodes.contains(e.osError?.errorCode)) {
-          yield NetworkAddress(host, port, false);
-        } else {
-          // Error 23,24: Too many open files in system
-          rethrow;
-        }
+        // if (e.osError == null || _errorCodes.contains(e.osError?.errorCode)) {
+        //   yield NetworkAddress(host, port, false);
+        // } else {
+        //   // Error 23,24: Too many open files in system
+        //   rethrow;
+        // }
       }
     }
   }
@@ -76,7 +76,7 @@ class NetworkAnalyzer {
   /// Pings a given [subnet] (xxx.xxx.xxx) on a given [port].
   ///
   /// Pings IP:PORT all at once
-  static Stream<NetworkAddress> discover2(
+  static Stream<String> discover2(
     String subnet,
     int port, {
     int firstSubnet = 1,
@@ -97,7 +97,7 @@ class NetworkAnalyzer {
     }
     final int lastValidSubnet = min(lastSubnet, maxEnd);
 
-    final out = StreamController<NetworkAddress>();
+    final out = StreamController<String>();
     final futures = <Future<Socket>>[];
     for (int i = firstSubnet; i <= lastValidSubnet; i++) {
       final host = '$subnet.$i';
@@ -105,19 +105,19 @@ class NetworkAnalyzer {
       futures.add(f);
       f.then((socket) {
         socket.destroy();
-        out.sink.add(NetworkAddress(host, port, true));
+        out.sink.add(host);
       }).catchError((dynamic e) {
         if (e is! SocketException) {
           throw e;
         }
 
         // Check if connection timed out or we got one of predefined errors
-        if (e.osError == null || _errorCodes.contains(e.osError?.errorCode)) {
-          out.sink.add(NetworkAddress(host, port, false));
-        } else {
-          // Error 23,24: Too many open files in system
-          throw e;
-        }
+        // if (e.osError == null || _errorCodes.contains(e.osError?.errorCode)) {
+        //   out.sink.add(NetworkAddress(host, port, false));
+        // } else {
+        //   // Error 23,24: Too many open files in system
+        //   throw e;
+        // }
       });
     }
 

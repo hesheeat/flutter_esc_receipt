@@ -4,13 +4,13 @@ import 'package:flutter_usb_printer/flutter_usb_printer.dart';
 import 'extension.dart';
 import 'printer_controller.dart';
 
-class USEDevice {
+class USBDevice {
   String? name;
   String? manufacturer;
   int? vendorId;
   int? productId;
   int? deviceId;
-  USEDevice({
+  USBDevice({
     this.name,
     this.manufacturer,
     this.vendorId,
@@ -19,14 +19,14 @@ class USEDevice {
   });
 }
 
-class USEPrinterController extends PrinterController {
-  static Future<List<USEDevice>> listUSEDevices() async {
-    List<USEDevice> devices = [];
+class USBPrinterController extends PrinterController {
+  static Future<List<USBDevice>> listDevices() async {
+    List<USBDevice> devices = [];
     if (Platform.isAndroid) {
       var results = await FlutterUsbPrinter.getUSBDeviceList();
       devices = [
         ...results
-            .map((e) => USEDevice(
+            .map((e) => USBDevice(
                   name: e["productName"],
                   manufacturer: e["manufacturer"],
                   vendorId: int.tryParse(e["vendorId"]),
@@ -40,9 +40,9 @@ class USEPrinterController extends PrinterController {
   }
 
   final usbPrinter = FlutterUsbPrinter();
-  final USEDevice usbDevice;
+  final USBDevice usbDevice;
 
-  USEPrinterController({
+  USBPrinterController({
     required this.usbDevice,
   });
 
